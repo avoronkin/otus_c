@@ -16,8 +16,8 @@ int main(int argc, char *argv[])
 
     char *zipjpeg_path = argv[1];
 
-    FILE *file_ptr;
-    if ((file_ptr = fopen(zipjpeg_path, "r")) == NULL)
+    FILE *file_ptr = fopen(zipjpeg_path, "r");
+    if (file_ptr == NULL)
     {
         fprintf(stderr, "Не удалось открыть файл \"%s\"\n", zipjpeg_path);
         exit(EXIT_FAILURE);
