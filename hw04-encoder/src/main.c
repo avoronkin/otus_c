@@ -26,19 +26,14 @@ int main(int argc, char *argv[])
             wch = fputc((utf_code >> 6) | 0xC0, config.output);
             assert(wch != EOF && "Ошибка записи в выходной файл");
 
-
             // Берём младшие 6 бит (0x3F 0b00111111), накладываем маску (0x80 0b10000000()
             wch = fputc((utf_code & 0x3F) | 0x80, config.output);
             assert(wch != EOF && "Ошибка записи в выходной файл");
         }
     }
 
-    if (config.input) {
-        fclose(config.input);
-    }
-    if (config.output) {
-        fclose(config.output);
-    }
+    assert(fclose(config.input) == 0 && "Ошибка закрытия входного файла");
+    assert(fclose(config.output) == 0 && "Ошибка закрытия выходного файла");
 
     exit(EXIT_SUCCESS);
 }
