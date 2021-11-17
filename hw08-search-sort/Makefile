@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-Wall -Wextra -Wpedantic -std=c11
-EXE=wc
+EXE=wf
 
 .PHONY: all
 all: clean build

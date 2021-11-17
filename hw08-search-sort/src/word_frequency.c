@@ -49,7 +49,7 @@ wf*
 wf_count_words(FILE* fp)
 {
 
-  ht* word_table = ht_create(60000);
+  ht* word_table = ht_create(1024);
   if (word_table == NULL) {
     return NULL;
   }
@@ -86,7 +86,8 @@ wf_count_words(FILE* fp)
         return NULL;
       }
 
-      new_entry->word = (wchar_t*)malloc(wcslen(word_table->entries[i]->key) * sizeof(wchar_t) + 1);
+      new_entry->word = (wchar_t*)malloc(
+        wcslen(word_table->entries[i]->key) * sizeof(wchar_t) + 1);
       if (new_entry->word == NULL) {
         return NULL;
       }
@@ -99,9 +100,25 @@ wf_count_words(FILE* fp)
     }
   }
 
-  ht_destroy(word_table);
+  ht_free(word_table);
 
   qsort(result->entries, result->word_count, sizeof(ht_entry*), cmp_count);
 
   return result;
+}
+
+void
+wf_free(wf* wf)
+{
+  if (wf == NULL) {
+    return;
+  }
+
+  for (size_t i = 0; i < wf->word_count; i++) {
+    free(wf->entries[i]->word);
+    free(wf->entries[i]);
+  }
+
+  free(wf->entries);
+  free(wf);
 }

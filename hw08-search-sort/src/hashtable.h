@@ -23,8 +23,11 @@ typedef struct ht
 ht*
 ht_create(size_t capacity);
 
+ht*
+ht_realloc(ht* table, size_t new_capacity);
+
 void
-ht_destroy(ht* table);
+ht_free(ht* table);
 
 int
 ht_insert(ht* table, wchar_t* key, int value);
@@ -35,7 +38,7 @@ ht_get(ht* table, wchar_t* key);
 void
 ht_remove(ht* table, wchar_t* key);
 
-int
-ht_get_index(ht* table, wchar_t* key);
+unsigned int
+ht_get_index(wchar_t* key, size_t capacity);
 
 #endif /* HASHTABLE_H_INCLUDED */

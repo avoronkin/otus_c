@@ -3,6 +3,8 @@
 #include <locale.h>
 #include <stdlib.h>
 
+#define BUFFER_SIZE 50
+
 int
 main(int argc, char** argv)
 {
@@ -20,6 +22,8 @@ main(int argc, char** argv)
            word_frequency->entries[i]->word,
            word_frequency->entries[i]->count);
   }
+
+  wf_free(word_frequency);
 
   if (fclose(config.input) != 0) {
     fprintf(stderr, "Ошибка при закрытии файла\n");

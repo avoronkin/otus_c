@@ -7,5 +7,5 @@ make build
 # Тест
 
 ```
-./wc -i test.txt
+./wf -i test.txt
 ```

@@ -1,4 +1,6 @@
 #include "hashtable.h"
+#define HT_LOAD_FACTOR 0.5
+#define HT_RESIZE_FACTOR 2
 
 ht*
 ht_create(size_t capacity)
@@ -22,12 +24,36 @@ ht_create(size_t capacity)
   return table;
 }
 
+ht*
+ht_realloc(ht* table, size_t new_capacity)
+{
+  ht_entry** new_entries = calloc(new_capacity, sizeof(ht_entry*));
+  if (new_entries == NULL) {
+    return NULL;
+  }
+
+  for (size_t i = 0; i < table->capacity; i++) {
+    ht_entry* entry = table->entries[i];
+    if (entry != NULL && entry != table->deleted_entry) {
+      unsigned int index = ht_get_index(entry->key, new_capacity);
+      new_entries[index] = entry;
+    }
+  }
+
+  free(table->entries);
+  table->entries = new_entries;
+  table->capacity = new_capacity;
+
+  return table;
+}
+
 void
-ht_destroy(ht* table)
+ht_free(ht* table)
 {
   for (size_t i = 0; i < table->capacity; i++) {
     if (table->entries[i] != NULL && table->entries[i]->key != NULL) {
       free(table->entries[i]->key);
+      free(table->entries[i]);
     }
   }
 
@@ -38,11 +64,15 @@ ht_destroy(ht* table)
 int
 ht_insert(ht* table, wchar_t* key, int value)
 {
-  if (table->length == table->capacity) {
-    return -1;
+
+  if ((double)table->length / (double)table->capacity >= HT_LOAD_FACTOR) {
+    table = ht_realloc(table, table->capacity * HT_RESIZE_FACTOR);
+    if (table == NULL) {
+      return -1;
+    }
   }
 
-  unsigned int hash_index = ht_get_index(table, key);
+  unsigned int hash_index = ht_get_index(key, table->capacity);
 
   while (table->entries[hash_index] &&
          table->entries[hash_index] != table->deleted_entry) {
@@ -81,7 +111,7 @@ ht_insert(ht* table, wchar_t* key, int value)
 int
 ht_get(ht* table, wchar_t* key)
 {
-  unsigned int hash_index = ht_get_index(table, key);
+  unsigned int hash_index = ht_get_index(key, table->capacity);
 
   while (table->entries[hash_index]) {
     if (wcscmp(table->entries[hash_index]->key, key) == 0) {
@@ -101,7 +131,7 @@ ht_get(ht* table, wchar_t* key)
 void
 ht_remove(ht* table, wchar_t* key)
 {
-  unsigned int hash_index = ht_get_index(table, key);
+  unsigned int hash_index = ht_get_index(key, table->capacity);
 
   while (table->entries[hash_index]) {
 
@@ -122,12 +152,10 @@ ht_remove(ht* table, wchar_t* key)
       hash_index = 0;
     }
   }
-
-  return;
 }
 
-long long
-ht_get_hash(wchar_t* key)
+unsigned int
+ht_get_index(wchar_t* key, size_t capacity)
 {
   long long hash = 0;
   int i = 0;
@@ -137,13 +165,5 @@ ht_get_hash(wchar_t* key)
     i++;
   }
 
-  return hash;
-}
-
-int
-ht_get_index(ht* table, wchar_t* key)
-{
-  long long hash = ht_get_hash(key);
-
-  return (hash % table->capacity);
+  return (hash % capacity);
 }

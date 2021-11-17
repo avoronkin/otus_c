@@ -21,4 +21,7 @@ typedef struct wf
 wf*
 wf_count_words(FILE* fp);
 
+void
+wf_free(wf* wf);
+
 #endif // COUNTER_H_INCLUDED
