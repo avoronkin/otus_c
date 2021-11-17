@@ -4,11 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <wchar.h>
 
 typedef struct ht_entry
 {
-  wchar_t* key;
+  char* key;
   int value;
 } ht_entry;
 
@@ -30,15 +29,15 @@ void
 ht_free(ht* table);
 
 int
-ht_insert(ht* table, wchar_t* key, int value);
+ht_insert(ht* table, char* key, int value);
 
 int
-ht_get(ht* table, wchar_t* key);
+ht_get(ht* table, char* key);
 
 void
-ht_remove(ht* table, wchar_t* key);
+ht_remove(ht* table, char* key);
 
 unsigned int
-ht_get_index(wchar_t* key, size_t capacity);
+ht_get_index(char* key, size_t capacity);
 
 #endif /* HASHTABLE_H_INCLUDED */

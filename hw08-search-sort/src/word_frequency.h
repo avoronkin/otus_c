@@ -3,12 +3,10 @@
 
 #include "hashtable.h"
 #include <stdio.h>
-#include <wchar.h>
-#include <wctype.h>
 
 typedef struct wf_entry
 {
-  wchar_t* word;
+  char* word;
   int count;
 } wf_entry;
 

@@ -3,8 +3,6 @@
 #include <locale.h>
 #include <stdlib.h>
 
-#define BUFFER_SIZE 50
-
 int
 main(int argc, char** argv)
 {
@@ -18,7 +16,7 @@ main(int argc, char** argv)
   }
 
   for (size_t i = 0; i < word_frequency->word_count; i++) {
-    printf("%ls %d\n",
+    printf("%s %d\n",
            word_frequency->entries[i]->word,
            word_frequency->entries[i]->count);
   }

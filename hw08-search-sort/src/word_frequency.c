@@ -1,32 +1,40 @@
 #include "word_frequency.h"
 #include "hashtable.h"
+#include <wchar.h>
+#include <wctype.h>
 
-wchar_t*
-prepare_word(wchar_t* str)
+char*
+prepare_word(char* mbs)
 {
-  while (iswspace(*str) || iswpunct(*str) || *str == L'–' || *str == L'—' ||
-         *str == L'«') {
-    str++;
+  const size_t strSize = strlen(mbs) + 1;
+  wchar_t ws[strSize];
+  wchar_t* wcs = ws;
+  mbstowcs(wcs, mbs, strSize);
+
+  for (int i = 0; wcs[i]; i++) {
+    wcs[i] = towlower(wcs[i]);
   }
 
-  if (*str == 0) {
-    return str;
+  while (iswdigit(*wcs) || iswspace(*wcs) || iswpunct(*wcs) ||
+         *wcs == L'–' || *wcs == L'—' || *wcs == L'«') {
+    wcs++;
   }
 
-  wchar_t* end;
-  end = str + wcslen(str) - 1;
-  while (end > str && (iswspace(*end) || iswpunct(*end) || *end == L'–' ||
-                       *end == L'—' || *end == L'»')) {
+  if (*wcs == 0) {
+    return NULL;
+  }
+
+  wchar_t* end = wcs + wcslen(wcs) - 1;
+  while (end > wcs && (iswdigit(*end) || iswspace(*end) || iswpunct(*end) ||
+                       *end == L'–' || *end == L'—' || *end == L'»')) {
     end--;
   }
 
   end[1] = '\0';
 
-  for (int i = 0; str[i]; i++) {
-    str[i] = towlower(str[i]);
-  }
+  wcstombs(mbs, wcs, strSize);
 
-  return str;
+  return mbs;
 }
 
 int
@@ -54,18 +62,21 @@ wf_count_words(FILE* fp)
     return NULL;
   }
 
-  wchar_t word[101];
-  while (fwscanf(fp, L"%100ls", word) != EOF) {
-    wchar_t* tmp_word = prepare_word(word);
+  char tmp[101];
+  while (fscanf(fp, "%100s", tmp) != EOF) {
+    char* word = prepare_word(tmp);
+    if (word == NULL) {
+      continue;
+    }
 
-    int count = ht_get(word_table, tmp_word);
+    int count = ht_get(word_table, word);
     if (count == -1) {
       count = 1;
     } else {
       count += 1;
     }
 
-    int return_code = ht_insert(word_table, tmp_word, count);
+    int return_code = ht_insert(word_table, word, count);
     if (return_code == -1) {
       return NULL;
     }
@@ -86,12 +97,12 @@ wf_count_words(FILE* fp)
         return NULL;
       }
 
-      new_entry->word = (wchar_t*)malloc(
-        wcslen(word_table->entries[i]->key) * sizeof(wchar_t) + 1);
+      new_entry->word =
+        (char*)malloc(strlen(word_table->entries[i]->key) * sizeof(char) + 1);
       if (new_entry->word == NULL) {
         return NULL;
       }
-      wcscpy(new_entry->word, word_table->entries[i]->key);
+      strcpy(new_entry->word, word_table->entries[i]->key);
 
       new_entry->count = word_table->entries[i]->value;
 

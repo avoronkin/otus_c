@@ -62,7 +62,7 @@ ht_free(ht* table)
 }
 
 int
-ht_insert(ht* table, wchar_t* key, int value)
+ht_insert(ht* table, char* key, int value)
 {
 
   if ((double)table->length / (double)table->capacity >= HT_LOAD_FACTOR) {
@@ -77,7 +77,7 @@ ht_insert(ht* table, wchar_t* key, int value)
   while (table->entries[hash_index] &&
          table->entries[hash_index] != table->deleted_entry) {
 
-    if (wcscmp(table->entries[hash_index]->key, key) == 0) {
+    if (strcmp(table->entries[hash_index]->key, key) == 0) {
       table->entries[hash_index]->value = value;
       return 0;
     }
@@ -94,11 +94,11 @@ ht_insert(ht* table, wchar_t* key, int value)
     return -1;
   }
 
-  wchar_t* temp_key = (wchar_t*)malloc(wcslen(key) * sizeof(wchar_t) + 1);
+  char* temp_key = (char*)malloc(strlen(key) * sizeof(char) + 1);
   if (temp_key == NULL) {
     return -1;
   }
-  wcscpy(temp_key, key);
+  strcpy(temp_key, key);
 
   new_entry->key = temp_key;
   new_entry->value = value;
@@ -109,12 +109,12 @@ ht_insert(ht* table, wchar_t* key, int value)
 }
 
 int
-ht_get(ht* table, wchar_t* key)
+ht_get(ht* table, char* key)
 {
   unsigned int hash_index = ht_get_index(key, table->capacity);
 
   while (table->entries[hash_index]) {
-    if (wcscmp(table->entries[hash_index]->key, key) == 0) {
+    if (strcmp(table->entries[hash_index]->key, key) == 0) {
       return table->entries[hash_index]->value;
     }
 
@@ -129,14 +129,14 @@ ht_get(ht* table, wchar_t* key)
 }
 
 void
-ht_remove(ht* table, wchar_t* key)
+ht_remove(ht* table, char* key)
 {
   unsigned int hash_index = ht_get_index(key, table->capacity);
 
   while (table->entries[hash_index]) {
 
     if ((table->entries[hash_index] != table->deleted_entry) &&
-        (wcscmp(table->entries[hash_index]->key, key) == 0)) {
+        (strcmp(table->entries[hash_index]->key, key) == 0)) {
 
       free(table->entries[hash_index]->key);
       free(table->entries[hash_index]);
@@ -155,7 +155,7 @@ ht_remove(ht* table, wchar_t* key)
 }
 
 unsigned int
-ht_get_index(wchar_t* key, size_t capacity)
+ht_get_index(char* key, size_t capacity)
 {
   long long hash = 0;
   int i = 0;
