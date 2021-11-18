@@ -1,5 +1,6 @@
 CC=gcc
-CFLAGS=-Wall -Wextra -Wpedantic -std=c11
+CFLAGS=-Wall -Wextra -Werror -Wpedantic -std=c11 -g
+
 EXE=wf
 
 .PHONY: all

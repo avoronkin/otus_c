@@ -15,8 +15,8 @@ prepare_word(char* mbs)
     wcs[i] = towlower(wcs[i]);
   }
 
-  while (iswdigit(*wcs) || iswspace(*wcs) || iswpunct(*wcs) ||
-         *wcs == L'–' || *wcs == L'—' || *wcs == L'«') {
+  while (iswdigit(*wcs) || iswspace(*wcs) || iswpunct(*wcs) || *wcs == L'–' ||
+         *wcs == L'—' || *wcs == L'«') {
     wcs++;
   }
 
@@ -30,7 +30,7 @@ prepare_word(char* mbs)
     end--;
   }
 
-  end[1] = '\0';
+  end[1] = L'\0';
 
   wcstombs(mbs, wcs, strSize);
 

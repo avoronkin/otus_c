@@ -34,8 +34,17 @@ ht_realloc(ht* table, size_t new_capacity)
 
   for (size_t i = 0; i < table->capacity; i++) {
     ht_entry* entry = table->entries[i];
+
     if (entry != NULL && entry != table->deleted_entry) {
       unsigned int index = ht_get_index(entry->key, new_capacity);
+      while (new_entries[index] != NULL) {
+        index++;
+
+        if (index == new_capacity) {
+          index = 0;
+        }
+      }
+
       new_entries[index] = entry;
     }
   }
@@ -102,9 +111,9 @@ ht_insert(ht* table, char* key, int value)
 
   new_entry->key = temp_key;
   new_entry->value = value;
-
   table->entries[hash_index] = new_entry;
   table->length++;
+
   return 0;
 }
 
