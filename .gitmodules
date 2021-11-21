@@ -1,0 +1,6 @@
+[submodule "hw10-weather/lib/parson"]
+	path = hw10-weather/lib/parson
+	url = https://github.com/kgabis/parson
+[submodule "hw10-weather/lib/curl"]
+	path = hw10-weather/lib/curl
+	url = https://github.com/curl/curl.git
