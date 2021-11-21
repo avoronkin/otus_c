@@ -1,24 +1,11 @@
 #include "config.h"
 #include "metaweather.h"
+#include "forecast.h"
 #include <curl/curl.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-void
-forecast_print(MW_forecasts* forecasts, MW_location* location)
-{
-  printf("Дата       | Локация         | Прогноз       | Ветер | Ветер, м/с | Т мин.,°C  | Т макс.,°C \n");
 
-  int i = 0;
-  printf("%-10s | %-15s | %-13s | %-5s | %-10f | %-10f | %-10f\n",
-         forecasts->entries[i]->applicable_date,
-         location->title,
-         forecasts->entries[i]->weather_state_name,
-         forecasts->entries[i]->wind_direction_compass,
-         forecasts->entries[i]->wind_speed / 2.237,//перевод мили/час в метр/секунду
-         forecasts->entries[i]->min_temp,
-         forecasts->entries[i]->max_temp);
-}
 
 int
 main(int argc, char** argv)
@@ -63,7 +50,7 @@ main(int argc, char** argv)
       return -4;
     }
 
-    forecast_print(forecasts, locations->entries[i]);
+    forecast_print(stdout, forecasts, locations->entries[i]);
 
     mw_forecasts_free(forecasts);
   }

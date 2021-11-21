@@ -3,11 +3,9 @@ project(hw10-weather C)
 
 set(CMAKE_C_STANDARD 11)
 
-if (MSVC)
-    add_compile_options(/W4 /WX)
-else()
-    add_compile_options(-Wall -Wextra -pedantic -Werror -g)
-endif()
+set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} Wall -Wextra -pedantic -Werror")
+
 
 add_subdirectory("lib/curl")
 add_subdirectory("lib/parson")
@@ -20,8 +18,8 @@ include_directories(
 set(SOURCES
     "src/config.c"
     "src/fetch.c"
-    "src/metaweather_locations.c"
-    "src/metaweather_forecasts.c"
+    "src/metaweather.c"
+    "src/forecast.c"
     "src/main.c"
 )
 
