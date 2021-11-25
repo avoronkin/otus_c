@@ -4,24 +4,30 @@ project(hw10-weather C)
 set(CMAKE_C_STANDARD 11)
 
 set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} Wall -Wextra -pedantic -Werror")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic -Werror")
 
+find_package(CURL REQUIRED COMPONENTS HTTP HTTPS )
+include_directories(${CURL_INCLUDE_DIRS})
+set(METAWEATHER_DEPS ${METAWEATHER_DEPS} ${CURL_LIBRARIES})
 
-add_subdirectory("lib/curl")
-add_subdirectory("lib/parson")
+add_subdirectory("contrib/parson")
+include_directories("contrib/parson")
+set(METAWEATHER_DEPS ${METAWEATHER_DEPS} parson)
 
-include_directories(
-    "lib/curl"
-    "lib/parson"
-)
+add_library(metaweather
+    "src/metaweather/forecasts.c"
+    "src/metaweather/http.c"
+    "src/metaweather/locations.c"
+    )
+target_link_libraries(metaweather ${METAWEATHER_DEPS})
+target_include_directories(metaweather PUBLIC src/metaweather)
+set_target_properties(metaweather PROPERTIES PUBLIC_HEADER src/metaweather/metaweather.h)
 
 set(SOURCES
-    "src/config.c"
-    "src/fetch.c"
-    "src/metaweather.c"
-    "src/forecast.c"
     "src/main.c"
+    "src/config.c"
+    "src/forecast.c"
 )
 
-add_executable(weather ${SOURCES})
-target_link_libraries(weather libcurl parson)
+add_executable(weather_cli ${SOURCES} )
+target_link_libraries(weather_cli metaweather)

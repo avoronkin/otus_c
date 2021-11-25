@@ -10,7 +10,7 @@ print_help()
           "Параметры:\n"
           "  -l название локации\n"
           "  -h справка\n"
-          "Пример: weather -l Moscow\n");
+          "Пример: weather_cli -l Moscow\n");
 }
 
 cfg

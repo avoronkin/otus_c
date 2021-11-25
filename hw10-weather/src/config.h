@@ -1,5 +1,5 @@
 #ifndef CONFIG_H_INCLUDED
-#define CONFIG_H_INCLUDED 1
+#define CONFIG_H_INCLUDED
 
 #include <stdio.h>
 #include <stdlib.h>

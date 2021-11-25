@@ -1,9 +1,9 @@
-// #include "metaweather.h"
-// #include <stdio.h>
 #include "forecast.h"
+#include "metaweather/metaweather.h"
+#include <stdio.h>
 
 void
-forecast_print(FILE* output, MW_forecasts* forecasts, MW_location* location)
+forecast_print(FILE* output, MW_Forecasts* forecasts, MW_Location* location)
 {
   fprintf(output, "Дата       | Локация         | Прогноз       | Ветер | Ветер, м/с | Т мин.,°C  | Т макс.,°C \n");
 
