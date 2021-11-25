@@ -1,0 +1,3 @@
+[submodule "hw10-weather/contrib/parson"]
+	path = hw10-weather/contrib/parson
+	url = https://github.com/kgabis/parson

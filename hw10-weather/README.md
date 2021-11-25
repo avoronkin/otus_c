@@ -13,5 +13,5 @@ cmake --build .
 
 ```
 cd otus_c/hw10-weather/build
-./weather -l Moscow
+./weather_cli -l Moscow
 ```
