@@ -658,14 +658,19 @@ clib_package_new_from_slug_with_package_name(const char *slug, int verbose,
       init_curl_share();
       _debug("GET %s", json_url);
       res = http_get_shared(json_url, clib_package_curl_share);
+
+      curl_share_cleanup(clib_package_curl_share);
+      clib_package_curl_share = 0;
 #else
       res = http_get(json_url);
 #endif
-      json = res->data;
       _debug("status: %d", res->status);
       if (!res || !res->ok) {
+        http_get_free(res);
+        res = NULL;
         goto download;
       }
+      json = res->data;
       log = "fetch";
     }
   }
@@ -996,13 +1001,10 @@ cleanup:
 #ifdef HAVE_PTHREADS
 static void *fetch_package_file_thread(void *arg) {
   fetch_package_file_thread_data_t *data = arg;
-  int *status = malloc(sizeof(int));
   int rc =
       fetch_package_file_work(data->pkg, data->dir, data->file, data->verbose);
-  *status = rc;
   (void)data->pkg->refs--;
-  pthread_exit((void *)status);
-  return (void *)rc;
+  pthread_exit(rc);
 }
 #endif
 
@@ -1380,7 +1382,9 @@ int clib_package_install(clib_package_t *pkg, const char *dir, int verbose) {
 #ifdef HAVE_PTHREADS
     pthread_mutex_lock(&lock.mutex);
 #endif
-    hash_set(visited_packages, strdup(pkg->name), "t");
+    if (!hash_has(visited_packages, pkg->name)) {
+      hash_set(visited_packages, strdup(pkg->name), "t");
+    }
 #ifdef HAVE_PTHREADS
     pthread_mutex_unlock(&lock.mutex);
 #endif
