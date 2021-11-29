@@ -9,13 +9,10 @@
 MW_Forecasts*
 mw_forecasts_alloc()
 {
-  MW_Forecasts* forecasts = malloc(sizeof(MW_Forecasts));
+  MW_Forecasts* forecasts = calloc(1, sizeof(MW_Forecasts));
   if (forecasts == NULL) {
     return NULL;
   }
-
-  forecasts->size = 0;
-  forecasts->entries = NULL;
 
   return forecasts;
 }

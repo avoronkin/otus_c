@@ -9,13 +9,10 @@
 MW_Locations*
 mw_locations_alloc()
 {
-  MW_Locations* locations = malloc(sizeof(MW_Locations));
+  MW_Locations* locations = calloc(1, sizeof(MW_Locations));
   if (locations == NULL) {
     return NULL;
   }
-
-  locations->size = 0;
-  locations->entries = NULL;
 
   return locations;
 }
@@ -82,7 +79,7 @@ mw_locations_fill_from_response(MW_Locations* locations, char* body)
     }
 
     const char* title = json_object_get_string(location, "title");
-    new_location->title = (char*)malloc(strlen(title) * sizeof(char) + 1);
+    new_location->title = (char*)malloc(strlen(title) + 1);
     if (new_location->title == NULL) {
       json_value_free(json_value);
       return MW_ALLOCATION_ERROR;

@@ -1,5 +1,5 @@
 #ifndef FORECAST_H_INCLUDED
-#define FORECAST_H_INCLUDED 1
+#define FORECAST_H_INCLUDED
 
 #include "metaweather/metaweather.h"
 #include <stdio.h>

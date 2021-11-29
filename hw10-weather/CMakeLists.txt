@@ -3,7 +3,6 @@ project(hw10-weather C)
 
 set(CMAKE_C_STANDARD 11)
 
-set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic -Werror")
 
 find_package(CURL REQUIRED COMPONENTS HTTP HTTPS )
