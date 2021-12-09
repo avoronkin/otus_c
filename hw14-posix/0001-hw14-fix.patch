@@ -1,0 +1,63 @@
+From f2850a8dce04114bce6cc31037075af45d08d53f Mon Sep 17 00:00:00 2001
+From: alex <admin@elasticweb.ru>
+Date: Sun, 28 Nov 2021 23:46:07 +0300
+Subject: [PATCH] hw14 fix
+
+---
+ hw14-posix/clib/src/common/clib-package.c | 16 ++++++++++------
+ 1 file changed, 10 insertions(+), 6 deletions(-)
+
+diff --git a/hw14-posix/clib/src/common/clib-package.c b/hw14-posix/clib/src/common/clib-package.c
+index 268538e..c26aad8 100644
+--- a/hw14-posix/clib/src/common/clib-package.c
++++ b/hw14-posix/clib/src/common/clib-package.c
+@@ -658,14 +658,19 @@ clib_package_new_from_slug_with_package_name(const char *slug, int verbose,
+       init_curl_share();
+       _debug("GET %s", json_url);
+       res = http_get_shared(json_url, clib_package_curl_share);
++
++      curl_share_cleanup(clib_package_curl_share);
++      clib_package_curl_share = 0;
+ #else
+       res = http_get(json_url);
+ #endif
+-      json = res->data;
+       _debug("status: %d", res->status);
+       if (!res || !res->ok) {
++        http_get_free(res);
++        res = NULL;
+         goto download;
+       }
++      json = res->data;
+       log = "fetch";
+     }
+   }
+@@ -996,13 +1001,10 @@ cleanup:
+ #ifdef HAVE_PTHREADS
+ static void *fetch_package_file_thread(void *arg) {
+   fetch_package_file_thread_data_t *data = arg;
+-  int *status = malloc(sizeof(int));
+   int rc =
+       fetch_package_file_work(data->pkg, data->dir, data->file, data->verbose);
+-  *status = rc;
+   (void)data->pkg->refs--;
+-  pthread_exit((void *)status);
+-  return (void *)rc;
++  pthread_exit(rc);
+ }
+ #endif
+ 
+@@ -1380,7 +1382,9 @@ int clib_package_install(clib_package_t *pkg, const char *dir, int verbose) {
+ #ifdef HAVE_PTHREADS
+     pthread_mutex_lock(&lock.mutex);
+ #endif
+-    hash_set(visited_packages, strdup(pkg->name), "t");
++    if (!hash_has(visited_packages, pkg->name)) {
++      hash_set(visited_packages, strdup(pkg->name), "t");
++    }
+ #ifdef HAVE_PTHREADS
+     pthread_mutex_unlock(&lock.mutex);
+ #endif
+-- 
+2.25.1
+
