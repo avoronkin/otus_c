@@ -1,7 +1,12 @@
 
+#include <fcntl.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <time.h>
+#include <unistd.h>
 
 const uint32_t crc32_tab[] = {
   0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f, 0xe963a535, 0x9e6495a3, 0x0edb8832,
@@ -35,38 +40,83 @@ const uint32_t crc32_tab[] = {
   0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
 };
 
-uint32_t
-crc32_for_bigfile(FILE* fp)
-{
-  uint32_t crc32 = 0xFFFFFFFFu;
-
-  int ch;
-  while ((ch = fgetc(fp)) != EOF) {
-    const uint32_t lookupIndex = (crc32 ^ ch) & 0xff;
-    crc32 = (crc32 >> 8) ^ crc32_tab[lookupIndex];
-  }
-
-  crc32 ^= 0xFFFFFFFFu;
-  return crc32;
-}
-
 int
 main(int argc, char* argv[])
 {
-  (void)argc;
-  FILE* fp;
-  fp = fopen(argv[1], "r");
-  if (fp == NULL) {
-    fprintf(stderr, "Error: cannot open file %s\n", argv[1]);
+  clock_t start;
+  clock_t end;
+  int elapsed_time;
+  start = clock();
 
+  if (argc < 2) {
+    printf("Usage: %s <file_path>\n", argv[0]);
+    exit(EXIT_FAILURE);
+  }
+  const char* filepath = argv[1];
+
+  int fd = open(filepath, O_RDONLY);
+  if (fd < 0) {
+    fprintf(stderr, "Error: cannot open file %s\n", filepath);
     exit(EXIT_FAILURE);
   }
 
-  uint32_t crc32 = crc32_for_bigfile(fp);
-  printf("%X\n", crc32);
+  struct stat statbuf;
+  int err = fstat(fd, &statbuf);
+  if (err == -1) {
+    fprintf(stderr, "Error: cannot get file size\n");
+    exit(EXIT_FAILURE);
+  }
+  size_t file_size = statbuf.st_size;
 
-  if (fclose(fp) != 0) {
+  long page_size = sysconf(_SC_PAGESIZE);
+  if (page_size == -1) {
+    fprintf(stderr, "Error: cannot get page size\n");
+    exit(EXIT_FAILURE);
+  }
+  size_t chunck_size = page_size * 1024 * 8;
+
+  off_t offset = 0;
+  int length;
+  char* map = NULL;
+  uint32_t crc32 = 0xFFFFFFFFu;
+
+  while (file_size > 0) {
+    if (file_size < chunck_size) {
+      length = file_size;
+      file_size = 0;
+    } else {
+      length = chunck_size;
+      file_size -= chunck_size;
+    }
+
+    map = mmap(0, length, PROT_READ, MAP_PRIVATE, fd, offset);
+    if (map == MAP_FAILED) {
+      fprintf(stderr, "Error: cannot map file\n");
+      exit(EXIT_FAILURE);
+    }
+
+    for (int k = 0; k < length; k++) {
+      const uint32_t lookupIndex = (crc32 ^ map[k]) & 0xff;
+      crc32 = (crc32 >> 8) ^ crc32_tab[lookupIndex];
+    }
+
+    if (munmap(map, length) < 0) {
+      fprintf(stderr, "Error: cannot unmap file\n");
+      exit(EXIT_FAILURE);
+    }
+
+    offset += chunck_size;
+  }
+
+  crc32 ^= 0xFFFFFFFFu;
+  printf("crc32: %X\n", crc32);
+
+  if (close(fd) != 0) {
     fprintf(stderr, "Error: cannot close file %s\n", argv[1]);
     exit(EXIT_FAILURE);
   }
+
+  end = clock();
+  elapsed_time = (double)(end - start) / (CLOCKS_PER_SEC);
+  printf("elapsed_time=%d sec\n", elapsed_time);
 }
