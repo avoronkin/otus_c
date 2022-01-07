@@ -1,10 +1,7 @@
 
-#include <fcntl.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
 #include <unistd.h>
 
 const uint32_t crc32_tab[] = {
@@ -48,64 +45,24 @@ main(int argc, char* argv[])
   }
   const char* filepath = argv[1];
 
-  int fd = open(filepath, O_RDONLY);
-  if (fd < 0) {
+  FILE* fp = fopen(filepath, "r");
+  if (fp == NULL) {
     fprintf(stderr, "Error: cannot open file %s\n", filepath);
+
     exit(EXIT_FAILURE);
   }
 
-  struct stat statbuf;
-  int err = fstat(fd, &statbuf);
-  if (err == -1) {
-    fprintf(stderr, "Error: cannot get file size\n");
-    exit(EXIT_FAILURE);
-  }
-  size_t file_size = statbuf.st_size;
-
-  long page_size = sysconf(_SC_PAGESIZE);
-  if (page_size == -1) {
-    fprintf(stderr, "Error: cannot get page size\n");
-    exit(EXIT_FAILURE);
-  }
-  size_t chunck_size = page_size * 1024 * 8;
-
-  off_t offset = 0;
-  int length;
-  char* map = NULL;
   uint32_t crc32 = 0xFFFFFFFFu;
-
-  while (file_size > 0) {
-    if (file_size < chunck_size) {
-      length = file_size;
-      file_size = 0;
-    } else {
-      length = chunck_size;
-      file_size -= chunck_size;
-    }
-
-    map = mmap(0, length, PROT_READ, MAP_PRIVATE, fd, offset);
-    if (map == MAP_FAILED) {
-      fprintf(stderr, "Error: cannot map file\n");
-      exit(EXIT_FAILURE);
-    }
-
-    for (int k = 0; k < length; k++) {
-      const uint32_t lookupIndex = (crc32 ^ map[k]) & 0xff;
-      crc32 = (crc32 >> 8) ^ crc32_tab[lookupIndex];
-    }
-
-    if (munmap(map, length) < 0) {
-      fprintf(stderr, "Error: cannot unmap file\n");
-      exit(EXIT_FAILURE);
-    }
-
-    offset += chunck_size;
+  int ch;
+  while ((ch = fgetc(fp)) != EOF) {
+    const uint32_t lookupIndex = (crc32 ^ ch) & 0xff;
+    crc32 = (crc32 >> 8) ^ crc32_tab[lookupIndex];
   }
 
   crc32 ^= 0xFFFFFFFFu;
   printf("crc32: %X\n", crc32);
 
-  if (close(fd) != 0) {
+  if (fclose(fp) != 0) {
     fprintf(stderr, "Error: cannot close file %s\n", argv[1]);
     exit(EXIT_FAILURE);
   }
